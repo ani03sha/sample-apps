@@ -9,6 +9,7 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.DeleteObjectRequest;
 import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.S3Object;
 import org.redquark.apps.filesapp.configurations.AmazonS3Config;
 import org.redquark.apps.filesapp.utils.FileUtils;
 import org.slf4j.Logger;
@@ -18,7 +19,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 import static org.redquark.apps.filesapp.constants.AppConstants.SLASH;
 
@@ -74,5 +78,24 @@ public class AmazonClientService {
         LOGGER.info("{}: trying to delete {}", TAG, fileName);
         s3client.deleteObject(new DeleteObjectRequest(amazonS3Config.getBucketName(), fileName));
         return "Successfully deleted";
+    }
+
+    public boolean doesFileExist(String fileName) {
+        return s3client.doesObjectExist(amazonS3Config.getBucketName(), fileName);
+    }
+
+    public String get(String fileName) {
+        StringBuilder content = new StringBuilder();
+        try {
+            S3Object fileObject = s3client.getObject(amazonS3Config.getBucketName(), fileName);
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(fileObject.getObjectContent()));
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                content.append(line);
+            }
+        } catch (IOException e) {
+            LOGGER.error("{}: cannot get {} due to {}", TAG, fileName, e.getMessage());
+        }
+        return content.toString();
     }
 }
