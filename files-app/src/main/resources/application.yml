@@ -1,0 +1,5 @@
+amazonProperties:
+  endpointUrl: https://s3.ap-south-1.amazonaws.com
+  accessKey: AKIASHHKVYVID2RCCEG4
+  secretKey: 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
+  bucketName: redquark-files-demo
